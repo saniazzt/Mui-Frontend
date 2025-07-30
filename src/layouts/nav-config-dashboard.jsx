@@ -5,6 +5,8 @@ import { CONFIG } from 'src/global-config';
 import { Label } from 'src/components/label';
 import { SvgColor } from 'src/components/svg-color';
 
+import { useAuthContext } from 'src/auth/hooks/use-auth-context';
+
 // ----------------------------------------------------------------------
 
 const icon = (name) => <SvgColor src={`${CONFIG.assetsDir}/assets/icons/navbar/${name}.svg`} />;
@@ -41,10 +43,11 @@ const ICONS = {
 
 // ----------------------------------------------------------------------
 
-export const navData = [
-  /**
-   * Overview
-   */
+export function GetNavDataByRole() {
+  // Shared options
+  const { user } = useAuthContext();
+
+  const sharedItems = [
   {
     subheader: 'Overview',
     items: [
@@ -58,22 +61,60 @@ export const navData = [
       { title: 'Three', path: paths.dashboard.three, icon: ICONS.analytics },
     ],
   },
-  /**
-   * Management
-   */
-  {
-    subheader: 'Management',
-    items: [
-      {
-        title: 'Group',
-        path: paths.dashboard.group.root,
-        icon: ICONS.user,
-        children: [
-          { title: 'Four', path: paths.dashboard.group.root },
-          { title: 'Five', path: paths.dashboard.group.five },
-          { title: 'Six', path: paths.dashboard.group.six },
-        ],
-      },
-    ],
-  },
-];
+  ];
+
+  // Role-specific options
+
+  // const userItems = [
+  //   ...sharedItems,
+  //   {
+  //     title: 'User Profile',
+  //     path: paths.dashboard.profile,
+  //     icon: ICONS.user,
+  //   },
+  //   // ...other user-only items
+  // ];
+
+  const adminItems = [
+      ...sharedItems,
+    {
+      subheader: 'Management',
+      items: [
+        {
+          title: 'Users',
+          path: paths.dashboard.users.root,
+          icon: ICONS.user,
+          children: [
+            { title: 'Four', path: paths.dashboard.users.root },
+            { title: 'Five', path: paths.dashboard.users.five },
+            { title: 'Six', path: paths.dashboard.users.six },
+          ],
+        },
+      ],
+    },
+  ];
+
+  const superAdminItems = [
+    ...adminItems,
+    {
+      subheader: 'Super Management',
+      items: [
+        {
+          title: 'Admins',
+          path: paths.dashboard.admins.root,
+          icon: ICONS.job,
+          children: [
+            { title: 'Seven', path: paths.dashboard.admins.root },
+            { title: 'Eight', path: paths.dashboard.admins.five },
+            { title: 'Nine', path: paths.dashboard.admins.six },
+          ],
+        },
+      ],
+    },
+    // ...other superadmin-only items
+  ];
+
+  if (user?.role === 'admin') return adminItems;
+  if (user?.role === 'superadmin') return superAdminItems;
+  return sharedItems; // default to user
+}
