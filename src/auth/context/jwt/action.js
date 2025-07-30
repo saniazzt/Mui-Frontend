@@ -14,7 +14,7 @@ export const signInWithPassword = async ({ email, password }) => {
     params.append('email', email);
     params.append('password', password);
 
-    const res = await axios.post('http://localhost:8001/login', params, {
+    const res = await axios.post(endpoints.auth.signIn, params, {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
@@ -26,6 +26,9 @@ export const signInWithPassword = async ({ email, password }) => {
     }
 
     await setSession(access_token);
+    if (user) {
+      sessionStorage.setItem('user', JSON.stringify(user));
+    }
 
     return user;
   } catch (error) {
@@ -37,24 +40,30 @@ export const signInWithPassword = async ({ email, password }) => {
 /** **************************************
  * Sign up
  *************************************** */
-export const signUp = async ({ email, password, firstName, lastName }) => {
-  const params = {
-    email,
-    password,
-    firstName,
-    lastName,
-  };
+export const signUp = async ({ username, email, password }) => {
+  const params = new URLSearchParams();
+  params.append('email', email);
+  params.append('username', username);
+  params.append('password', password);
 
   try {
-    const res = await axios.post(endpoints.auth.signUp, params);
+    const res = await axios.post(endpoints.auth.signUp, params, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    });
 
-    const { accessToken } = res.data;
+    const { access_token, user } = res.data;
 
-    if (!accessToken) {
+    if (!access_token) {
       throw new Error('Access token not found in response');
     }
 
-    sessionStorage.setItem(JWT_STORAGE_KEY, accessToken);
+    sessionStorage.setItem(JWT_STORAGE_KEY, access_token);
+    if (user) {
+      sessionStorage.setItem('user', JSON.stringify(user));
+    }
+    return user;
   } catch (error) {
     console.error('Error during sign up:', error);
     throw error;
