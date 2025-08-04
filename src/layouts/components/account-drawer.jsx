@@ -46,8 +46,8 @@ export function AccountDrawer({ data = [], sx, ...other }) {
         primaryBorder: { size: 120, sx: { color: 'primary.main' } },
       }}
     >
-      <Avatar src={user?.photoURL} alt={user?.displayName} sx={{ width: 1, height: 1 }}>
-        {user?.displayName?.charAt(0).toUpperCase()}
+      <Avatar src={user?.photoURL} alt={user?.displayName || user?.username} sx={{ width: 1, height: 1 }}>
+          {(user?.displayName || user?.username || '').charAt(0).toUpperCase()}
       </Avatar>
     </AnimateBorder>
   );
@@ -106,6 +106,8 @@ export function AccountDrawer({ data = [], sx, ...other }) {
     </MenuList>
   );
 
+  console.log('AccountDrawer user:', user);
+  
   return (
     <>
       <AccountButton

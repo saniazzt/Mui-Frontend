@@ -29,7 +29,8 @@ axiosInstance.interceptors.response.use(
   (error) => {
     const message = error?.response?.data?.message || error?.message || 'Something went wrong!';
     console.error('Axios error:', message);
-    return Promise.reject(new Error(message));
+    // Instead of: return Promise.reject(new Error(message));
+    return Promise.reject(error);
   }
 );
 
@@ -58,8 +59,8 @@ export const endpoints = {
   calendar: '/api/calendar',
   auth: {
     me: '/api/auth/me',
-    signIn: 'http://localhost:8001/login',
-    signUp: 'http://localhost:8001/signup',
+    signIn: 'http://localhost:8000/api/login/',
+    signUp: 'http://localhost:8000/api/register/',
   },
   mail: {
     list: '/api/mail/list',

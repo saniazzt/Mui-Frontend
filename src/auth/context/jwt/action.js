@@ -8,10 +8,10 @@ import { JWT_STORAGE_KEY } from './constant';
 /** **************************************
  * Sign in
  *************************************** */
-export const signInWithPassword = async ({ email, password }) => {
+export const signInWithPassword = async ({ username, password }) => {
   try {
     const params = new URLSearchParams();
-    params.append('email', email);
+    params.append('username', username);
     params.append('password', password);
 
     const res = await axios.post(endpoints.auth.signIn, params, {
@@ -19,8 +19,8 @@ export const signInWithPassword = async ({ email, password }) => {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
     });
-    const { access_token, user } = res.data;
-
+    const { access_token,refresh_token, user } = res.data;
+    console.log(res.data)
     if (!access_token) {
       throw new Error('Access token not found in response');
     }
@@ -40,11 +40,14 @@ export const signInWithPassword = async ({ email, password }) => {
 /** **************************************
  * Sign up
  *************************************** */
-export const signUp = async ({ username, email, password }) => {
+export const signUp = async ({ username, email, password, confirmPassword }) => {
   const params = new URLSearchParams();
   params.append('email', email);
   params.append('username', username);
-  params.append('password', password);
+  params.append('user_type', 'normal');
+  params.append('password1', password);
+  params.append('password2', confirmPassword);
+
 
   try {
     const res = await axios.post(endpoints.auth.signUp, params, {

@@ -24,7 +24,7 @@ export function AuthProvider({ children }) {
           id: decoded.sub,
           email: decoded.email,
           username: decoded.username,
-          role: decoded.role || 'user',
+          user_type: decoded.user_type || 'normal',
         };
 
         setState({ user: { ...user, accessToken }, loading: false });
@@ -47,7 +47,7 @@ export function AuthProvider({ children }) {
 
   const memoizedValue = useMemo(
     () => ({
-      user: state.user ? { ...state.user, role: state.user?.role ?? 'admin' } : null,
+      user: state.user ? { ...state.user, user_type: state.user?.user_type ?? 'normal' } : null,
       checkUserSession,
       loading: status === 'loading',
       authenticated: status === 'authenticated',
