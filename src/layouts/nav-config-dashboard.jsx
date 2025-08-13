@@ -61,6 +61,21 @@ export function GetNavDataByRole() {
       { title: 'Three', path: paths.dashboard.three, icon: ICONS.analytics },
     ],
   },
+  {
+      items: [
+        {
+        title: 'Preferences',
+        path: paths.dashboard.preferences.root,
+        icon: ICONS.menuItem,
+        children: [
+          // { title: 'Profile', path: paths.dashboard.user.root },
+          // { title: 'Cards', path: paths.dashboard.user.cards },
+          // { title: 'Create', path: paths.dashboard.user.new },
+          { title: 'Account', path: paths.dashboard.preferences.account, deepMatch: true },
+        ],
+      }
+      ]
+    },
   ];
 
   // Role-specific options
@@ -84,10 +99,9 @@ export function GetNavDataByRole() {
           title: 'Users',
           path: paths.dashboard.users.root,
           icon: ICONS.user,
-          children: [
-            { title: 'Four', path: paths.dashboard.users.root },
-            { title: 'Five', path: paths.dashboard.users.five },
-            { title: 'Six', path: paths.dashboard.users.six },
+          children: [            
+            { title: 'List', path: paths.dashboard.users.root },
+            // { title: 'Edit', path: paths.dashboard.users.demo.edit },
           ],
         },
       ],
@@ -104,9 +118,8 @@ export function GetNavDataByRole() {
           path: paths.dashboard.admins.root,
           icon: ICONS.job,
           children: [
-            { title: 'Seven', path: paths.dashboard.admins.root },
-            { title: 'Eight', path: paths.dashboard.admins.five },
-            { title: 'Nine', path: paths.dashboard.admins.six },
+            { title: 'List', path: paths.dashboard.admins.list },
+            { title: 'Create', path: paths.dashboard.admins.new },
           ],
         },
       ],
@@ -114,7 +127,7 @@ export function GetNavDataByRole() {
     // ...other superadmin-only items
   ];
 
-  if (user?.role === 'admin') return adminItems;
-  if (user?.role === 'superadmin') return superAdminItems;
+  if (user?.user_type === 'admin') return adminItems;
+  if (user?.user_type === 'superadmin') return superAdminItems;
   return sharedItems; // default to user
 }

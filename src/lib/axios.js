@@ -58,9 +58,19 @@ export const endpoints = {
   kanban: '/api/kanban',
   calendar: '/api/calendar',
   auth: {
-    me: '/api/auth/me',
+    me: 'http://localhost:8000/api/me/',
     signIn: 'http://localhost:8000/api/login/',
     signUp: 'http://localhost:8000/api/register/',
+  },
+  account: {
+    updateProfile: 'http://localhost:8000/api/update-profile/',
+    changePassword: 'http://localhost:8000/api/change-password',
+  },
+  users: {
+    list: 'http://localhost:8000/api/users/',
+    details: (id) => `http://localhost:8000/api/users/get/${id}/`,
+    update: (id) => `http://localhost:8000/api/users/update/${id}/`,
+    create: 'http://localhost:8000/api/users/create/',
   },
   mail: {
     list: '/api/mail/list',

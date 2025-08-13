@@ -1,4 +1,12 @@
+
+import { kebabCase } from 'es-toolkit';
+
+import { _id, _postTitles } from 'src/_mock/assets';
+
 // ----------------------------------------------------------------------
+
+const MOCK_ID = _id[1];
+const MOCK_TITLE = _postTitles[2];
 
 const ROOTS = {
   AUTH: '/auth',
@@ -50,10 +58,25 @@ export const paths = {
       five: `${ROOTS.DASHBOARD}/users/five`,
       six: `${ROOTS.DASHBOARD}/users/six`,
     },
+    preferences: {
+      root: `${ROOTS.DASHBOARD}/preferences`,
+      new: `${ROOTS.DASHBOARD}/preferences/new`,
+      cards: `${ROOTS.DASHBOARD}/preferences/cards`,
+      profile: `${ROOTS.DASHBOARD}/preferences/profile`,
+      account: `${ROOTS.DASHBOARD}/preferences/account`,
+    },
+    users: {
+      root: `${ROOTS.DASHBOARD}/users`,
+      list: `${ROOTS.DASHBOARD}/users/list`,
+      edit: (id) => `${ROOTS.DASHBOARD}/users/${id}/edit`,
+      demo: { edit: `${ROOTS.DASHBOARD}/users/${MOCK_ID}/edit` },
+    },
     admins: {
       root: `${ROOTS.DASHBOARD}/admins`,
-      five: `${ROOTS.DASHBOARD}/admins/five`,
-      six: `${ROOTS.DASHBOARD}/admins/six`,
+      list: `${ROOTS.DASHBOARD}/admins/list`,
+      edit: (id) => `${ROOTS.DASHBOARD}/admins/${id}/edit`,
+      demo: { edit: `${ROOTS.DASHBOARD}/admins/${MOCK_ID}/edit` },
+      new: `${ROOTS.DASHBOARD}/admins/new`,
     },
   },
 };

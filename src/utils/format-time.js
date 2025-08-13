@@ -1,6 +1,7 @@
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import axios from 'axios';
 
 // ----------------------------------------------------------------------
 
@@ -30,6 +31,12 @@ dayjs.extend(duration);
 dayjs.extend(relativeTime);
 
 // ----------------------------------------------------------------------
+
+const axiosInstance = axios.create({
+  baseURL: 'http://localhost:8000', // FastAPI base URL
+});
+
+export default axiosInstance;
 
 export const formatPatterns = {
   dateTime: 'DD MMM YYYY h:mm a', // 17 Apr 2022 12:00 am
@@ -262,3 +269,5 @@ export function fSub({
 
   return result;
 }
+
+

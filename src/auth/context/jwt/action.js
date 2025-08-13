@@ -26,11 +26,11 @@ export const signInWithPassword = async ({ username, password }) => {
     }
 
     await setSession(access_token);
-    if (user) {
-      sessionStorage.setItem('user', JSON.stringify(user));
-    }
+    // if (user) {
+    //   sessionStorage.setItem('user', JSON.stringify(user));
+    // }
 
-    return user;
+    // return user;
   } catch (error) {
     console.error('Error during sign in:', error);
     throw error;
@@ -63,10 +63,10 @@ export const signUp = async ({ username, email, password, confirmPassword }) => 
     }
 
     sessionStorage.setItem(JWT_STORAGE_KEY, access_token);
-    if (user) {
-      sessionStorage.setItem('user', JSON.stringify(user));
-    }
-    return user;
+    // if (user) {
+    //   sessionStorage.setItem('user', JSON.stringify(user));
+    // }
+    // return user;
   } catch (error) {
     console.error('Error during sign up:', error);
     throw error;

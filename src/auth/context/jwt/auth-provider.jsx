@@ -4,6 +4,8 @@ import { jwtDecode } from 'jwt-decode';
 import { useSetState } from 'minimal-shared/hooks';
 import { useMemo, useEffect, useCallback } from 'react';
 
+import axios, { endpoints } from 'src/lib/axios';
+
 import { JWT_STORAGE_KEY } from './constant';
 import { AuthContext } from '../auth-context';
 import { setSession, isValidToken } from './utils';
@@ -18,14 +20,9 @@ export function AuthProvider({ children }) {
       if (accessToken && isValidToken(accessToken)) {
         setSession(accessToken);
 
-        const decoded = jwtDecode(accessToken);
+        const res = await axios.get(endpoints.auth.me);
 
-        const user = {
-          id: decoded.sub,
-          email: decoded.email,
-          username: decoded.username,
-          user_type: decoded.user_type || 'normal',
-        };
+        const  user  = res.data;
 
         setState({ user: { ...user, accessToken }, loading: false });
       } else {
@@ -41,6 +38,13 @@ export function AuthProvider({ children }) {
     checkUserSession();
   }, [checkUserSession]);
 
+  // const setUser = useCallback(
+  //   (user) => {
+  //     setState({ user });
+  //   },
+  //   [setState]
+  // );
+
   const checkAuthenticated = state.user ? 'authenticated' : 'unauthenticated';
 
   const status = state.loading ? 'loading' : checkAuthenticated;
@@ -49,6 +53,7 @@ export function AuthProvider({ children }) {
     () => ({
       user: state.user ? { ...state.user, user_type: state.user?.user_type ?? 'normal' } : null,
       checkUserSession,
+      // setUser,
       loading: status === 'loading',
       authenticated: status === 'authenticated',
       unauthenticated: status === 'unauthenticated',

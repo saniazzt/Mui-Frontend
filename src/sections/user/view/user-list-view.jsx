@@ -1,0 +1,364 @@
+'use client';
+
+import { useState, useCallback } from 'react';
+import { varAlpha } from 'minimal-shared/utils';
+import { useBoolean, useSetState } from 'minimal-shared/hooks';
+
+import Box from '@mui/material/Box';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
+import Card from '@mui/material/Card';
+import Table from '@mui/material/Table';
+import Button from '@mui/material/Button';
+import Tooltip from '@mui/material/Tooltip';
+import TableBody from '@mui/material/TableBody';
+import IconButton from '@mui/material/IconButton';
+
+import { paths } from 'src/routes/paths';
+import { RouterLink } from 'src/routes/components';
+
+import { DashboardContent } from 'src/layouts/dashboard';
+import { _roles, _userList, USER_STATUS_OPTIONS } from 'src/_mock';
+
+import { Label } from 'src/components/label';
+import { toast } from 'src/components/snackbar';
+import { Iconify } from 'src/components/iconify';
+import { Scrollbar } from 'src/components/scrollbar';
+import { ConfirmDialog } from 'src/components/custom-dialog';
+import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
+import {
+  useTable,
+  emptyRows,
+  rowInPage,
+  TableNoData,
+  getComparator,
+  TableEmptyRows,
+  TableHeadCustom,
+  TableSelectedAction,
+  TablePaginationCustom,
+} from 'src/components/table';
+
+import { UserTableRow } from '../user-table-row';
+import { UserTableToolbar } from '../user-table-toolbar';
+import { UserTableFiltersResult } from '../user-table-filters-result';
+import { useEffect } from 'react';
+import axios from 'axios';
+import { endpoints } from 'src/lib/axios';
+import { JWT_STORAGE_KEY } from 'src/auth/context/jwt/constant';
+
+
+// ----------------------------------------------------------------------
+
+const STATUS_OPTIONS = [{ value: 'all', label: 'All' }, ...USER_STATUS_OPTIONS];
+
+const TABLE_HEAD = [
+  { id: 'name', label: 'Name' },
+  { id: 'phoneNumber', label: 'Phone number', width: 180 },
+  { id: 'company', label: 'Company', width: 220 },
+  { id: 'role', label: 'Role', width: 180 },
+  { id: 'status', label: 'Status', width: 100 },
+  { id: '', width: 88 },
+];
+
+// ----------------------------------------------------------------------
+
+export function UserListView() {
+  const table = useTable();
+
+  const confirmDialog = useBoolean();
+
+  const [tableData, setTableData] = useState([]);
+  
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+          const accessToken = sessionStorage.getItem(JWT_STORAGE_KEY);
+          const response = await axios.get(endpoints.users.list, {
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${accessToken}`,
+            },
+          });
+          setTableData(response.data);
+      } catch (error) {
+        console.error('Error fetching users:', error);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  const filters = useSetState({ name: '', role: [], status: 'all' });
+  const { state: currentFilters, setState: updateFilters } = filters;
+
+  const dataFiltered = applyFilter({
+    inputData: tableData,
+    comparator: getComparator(table.order, table.orderBy),
+    filters: currentFilters,
+  });
+
+  const dataInPage = rowInPage(dataFiltered, table.page, table.rowsPerPage);
+
+  const canReset =
+    !!currentFilters.name || currentFilters.role.length > 0 || currentFilters.status !== 'all';
+
+  const notFound = (!dataFiltered.length && canReset) || !dataFiltered.length;
+
+  const handleDeleteRow = useCallback(
+  async (id) => {
+    try {
+      const accessToken = sessionStorage.getItem(JWT_STORAGE_KEY);
+      const res = await axios.delete(endpoints.users.update(id), {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
+        },
+      });
+
+      if (res.data.success) {
+        const deleteRow = tableData.filter((row) => row.id !== id);
+        setTableData(deleteRow);
+        table.onUpdatePageDeleteRow(dataInPage.length);
+        toast.success('Delete success!');
+      } else {
+        toast.error('Delete failed!');
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error('Delete failed!');
+    }
+  },
+  [dataInPage.length, table, tableData]
+);
+
+  const handleDeleteRows = useCallback(() => {
+    const deleteRows = tableData.filter((row) => !table.selected.includes(row.id));
+
+    toast.success('Delete success!');
+
+    setTableData(deleteRows);
+
+    table.onUpdatePageDeleteRows(dataInPage.length, dataFiltered.length);
+  }, [dataFiltered.length, dataInPage.length, table, tableData]);
+
+  const handleFilterStatus = useCallback(
+    (event, newValue) => {
+      table.onResetPage();
+      updateFilters({ status: newValue });
+    },
+    [updateFilters, table]
+  );
+
+  const renderConfirmDialog = () => (
+    <ConfirmDialog
+      open={confirmDialog.value}
+      onClose={confirmDialog.onFalse}
+      title="Delete"
+      content={
+        <>
+          Are you sure want to delete <strong> {table.selected.length} </strong> items?
+        </>
+      }
+      action={
+        <Button
+          variant="contained"
+          color="error"
+          onClick={() => {
+            handleDeleteRows();
+            confirmDialog.onFalse();
+          }}
+        >
+          Delete
+        </Button>
+      }
+    />
+  );
+
+  return (
+    <>
+      <DashboardContent>
+        <CustomBreadcrumbs
+          heading="List"
+          links={[
+            { name: 'Dashboard', href: paths.dashboard.root },
+            { name: 'Users', href: paths.dashboard.users.root },
+            { name: 'List' },
+          ]}
+          // action={
+          //   <Button
+          //     component={RouterLink}
+          //     href={paths.dashboard.users.new}
+          //     variant="contained"
+          //     startIcon={<Iconify icon="mingcute:add-line" />}
+          //   >
+          //     Add user
+          //   </Button>
+          // }
+          sx={{ mb: { xs: 3, md: 5 } }}
+        />
+
+        <Card>
+          <Tabs
+            value={currentFilters.status}
+            onChange={handleFilterStatus}
+            sx={[
+              (theme) => ({
+                px: { md: 2.5 },
+                boxShadow: `inset 0 -2px 0 0 ${varAlpha(theme.vars.palette.grey['500Channel'], 0.08)}`,
+              }),
+            ]}
+          >
+            {STATUS_OPTIONS.map((tab) => (
+              <Tab
+                key={tab.value}
+                iconPosition="end"
+                value={tab.value}
+                label={tab.label}
+                icon={
+                  <Label
+                    variant={
+                      ((tab.value === 'all' || tab.value === currentFilters.status) && 'filled') ||
+                      'soft'
+                    }
+                    color={
+                      (tab.value === 'active' && 'success') ||
+                      (tab.value === 'pending' && 'warning') ||
+                      (tab.value === 'banned' && 'error') ||
+                      'default'
+                    }
+                  >
+                    {['active', 'pending', 'banned', 'rejected'].includes(tab.value)
+                      ? tableData.filter((user) => user.status === tab.value).length
+                      : tableData.length}
+                  </Label>
+                }
+              />
+            ))}
+          </Tabs>
+
+          <UserTableToolbar
+            filters={filters}
+            onResetPage={table.onResetPage}
+            options={{ roles: ['admin', 'user'] }}
+          />
+
+          {canReset && (
+            <UserTableFiltersResult
+              filters={filters}
+              totalResults={dataFiltered.length}
+              onResetPage={table.onResetPage}
+              sx={{ p: 2.5, pt: 0 }}
+            />
+          )}
+
+          <Box sx={{ position: 'relative' }}>
+            <TableSelectedAction
+              dense={table.dense}
+              numSelected={table.selected.length}
+              rowCount={dataFiltered.length}
+              onSelectAllRows={(checked) =>
+                table.onSelectAllRows(
+                  checked,
+                  dataFiltered.map((row) => row.id)
+                )
+              }
+              action={
+                <Tooltip title="Delete">
+                  <IconButton color="primary" onClick={confirmDialog.onTrue}>
+                    <Iconify icon="solar:trash-bin-trash-bold" />
+                  </IconButton>
+                </Tooltip>
+              }
+            />
+
+            <Scrollbar>
+              <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 960 }}>
+                <TableHeadCustom
+                  order={table.order}
+                  orderBy={table.orderBy}
+                  headCells={TABLE_HEAD}
+                  rowCount={dataFiltered.length}
+                  numSelected={table.selected.length}
+                  onSort={table.onSort}
+                  onSelectAllRows={(checked) =>
+                    table.onSelectAllRows(
+                      checked,
+                      dataFiltered.map((row) => row.id)
+                    )
+                  }
+                />
+
+                <TableBody>
+                  {dataFiltered
+                    .slice(
+                      table.page * table.rowsPerPage,
+                      table.page * table.rowsPerPage + table.rowsPerPage
+                    )
+                    .map((row) => (
+                      <UserTableRow
+                        key={row.id}
+                        row={row}
+                        selected={table.selected.includes(row.id)}
+                        onSelectRow={() => table.onSelectRow(row.id)}
+                        onDeleteRow={() => handleDeleteRow(row.id)}
+                        editHref={paths.dashboard.users.edit(row.id)}
+                      />
+                    ))}
+
+                  <TableEmptyRows
+                    height={table.dense ? 56 : 56 + 20}
+                    emptyRows={emptyRows(table.page, table.rowsPerPage, dataFiltered.length)}
+                  />
+
+                  <TableNoData notFound={notFound} />
+                </TableBody>
+              </Table>
+            </Scrollbar>
+          </Box>
+
+          <TablePaginationCustom
+            page={table.page}
+            dense={table.dense}
+            count={dataFiltered.length}
+            rowsPerPage={table.rowsPerPage}
+            onPageChange={table.onChangePage}
+            onChangeDense={table.onChangeDense}
+            onRowsPerPageChange={table.onChangeRowsPerPage}
+          />
+        </Card>
+      </DashboardContent>
+
+      {renderConfirmDialog()}
+    </>
+  );
+}
+
+// ----------------------------------------------------------------------
+
+function applyFilter({ inputData, comparator, filters }) {
+  const { name, status, role } = filters;
+
+  const stabilizedThis = inputData.map((el, index) => [el, index]);
+
+  stabilizedThis.sort((a, b) => {
+    const order = comparator(a[0], b[0]);
+    if (order !== 0) return order;
+    return a[1] - b[1];
+  });
+
+  inputData = stabilizedThis.map((el) => el[0]);
+
+  if (name) {
+    inputData = inputData.filter((user) => user.name.toLowerCase().includes(name.toLowerCase()));
+  }
+
+  if (status !== 'all') {
+    inputData = inputData.filter((user) => user.status === status);
+  }
+
+  if (role.length) {
+    inputData = inputData.filter((user) => role.includes(user.role));
+  }
+
+  return inputData;
+}
