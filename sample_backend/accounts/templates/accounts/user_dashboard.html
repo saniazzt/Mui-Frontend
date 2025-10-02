@@ -1,0 +1,30 @@
+{% extends "accounts/base.html" %}
+{% load static %}
+{% block title %}User Dashboard{% endblock %}
+{% block content %}
+<h2>User Dashboard</h2>
+
+{% if messages %}
+    <ul>
+        {% for message in messages %}
+            <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+<h3>Update Profile</h3>
+<form method="post">
+    {% csrf_token %}
+    {{ profile_form.as_p }}
+    <button type="submit" name="update_profile">Save Changes</button>
+</form>
+
+<hr>
+
+<h3>Send Message to Admin</h3>
+<form method="post">
+    {% csrf_token %}
+    {{ message_form.as_p }}
+    <button type="submit" name="send_message">Send Message</button>
+</form>
+{% endblock %}

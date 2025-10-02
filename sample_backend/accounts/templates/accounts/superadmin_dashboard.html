@@ -1,0 +1,58 @@
+{% extends "accounts/base.html" %}
+{% block title %}Super Admin Dashboard{% endblock %}
+{% block content %}
+
+<h2>Super Admin Dashboard</h2>
+
+{% if messages %}
+    <ul>
+        {% for message in messages %}
+            <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+<h3>Update Profile</h3>
+<form method="post">
+    {% csrf_token %}
+    {{ profile_form.as_p }}
+    <button type="submit" name="update_profile">Save Changes</button>
+</form>
+
+<hr>
+
+<h3>Admin Users</h3>
+<ul>
+    {% for admin in admins %}
+        <li>
+            {{ admin.username }} ({{ admin.email }})
+            <form method="post" style="display:inline">
+                {% csrf_token %}
+                <input type="hidden" name="admin_id" value="{{ admin.id }}">
+                <button type="submit" name="delete_admin">Delete</button>
+            </form>
+        </li>
+    {% empty %}
+        <li>No admin users.</li>
+    {% endfor %}
+</ul>
+
+<hr>
+
+<h3>Normal Users</h3>
+<ul>
+    {% for user in normals %}
+        <li>
+            {{ user.username }} ({{ user.email }})
+            <form method="post" style="display:inline">
+                {% csrf_token %}
+                <input type="hidden" name="user_id" value="{{ user.id }}">
+                <button type="submit" name="promote_user">Promote to Admin</button>
+            </form>
+        </li>
+    {% empty %}
+        <li>No normal users.</li>
+    {% endfor %}
+</ul>
+
+{% endblock %}

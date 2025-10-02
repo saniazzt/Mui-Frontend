@@ -1,0 +1,56 @@
+{% extends "accounts/base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+
+<h2>Admin Dashboard</h2>
+
+{% if messages %}
+    <ul>
+        {% for message in messages %}
+            <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+<h3>Update Profile</h3>
+<form method="post">
+    {% csrf_token %}
+    {{ profile_form.as_p }}
+    <button type="submit" name="update_profile">Save Changes</button>
+</form>
+
+<hr>
+
+<h3>Normal Users</h3>
+<ul>
+    {% for user in normal_users %}
+        <li>{{ user.username }} - {{ user.email }}</li>
+    {% empty %}
+        <li>No normal users found.</li>
+    {% endfor %}
+</ul>
+
+<hr>
+
+<h3>Messages from Users</h3>
+<ul>
+    {% for msg in incoming_messages %}
+        <li>
+            <strong>{{ msg.sender.username }}</strong>: {{ msg.message }} <br>
+            <em>{{ msg.created_at }}</em>
+        </li>
+    {% empty %}
+        <li>No messages yet.</li>
+    {% endfor %}
+</ul>
+
+<hr>
+
+<h3>Send Message to User</h3>
+<form method="post">
+    {% csrf_token %}
+    {{ reply_form.as_p }}
+    <button type="submit" name="send_reply">Send</button>
+</form>
+
+{% endblock %}
