@@ -51,8 +51,8 @@ Each role has its own dashboard:
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/saniazzt/Mui-Frontend.git
-cd Mui-Frontend
+git clone https://github.com/saniazzt/Role-based-Dashboard.git
+cd Role-based-Dashboard
 ```
 
 2. Install dependencies:
